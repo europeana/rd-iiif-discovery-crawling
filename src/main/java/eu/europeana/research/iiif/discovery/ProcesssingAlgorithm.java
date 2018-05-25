@@ -18,6 +18,7 @@ import eu.europeana.research.iiif.discovery.model.JsonObject;
 import eu.europeana.research.iiif.discovery.model.OrderedCollection;
 import eu.europeana.research.iiif.discovery.model.OrderedCollectionPage;
 import eu.europeana.research.iiif.discovery.syncdb.TimestampTracker;
+import eu.europeana.research.iiif.discovery.syncdb.TimestampTracker.Deleted;
 
 public class ProcesssingAlgorithm {
 	TimestampTracker timestampTracker;
@@ -40,14 +41,26 @@ public class ProcesssingAlgorithm {
 		lastHarvest=timestampTracker.getDatasetStatus(dataset);
 		processedItems=new HashSet<>(1000);
 		currentHarvestStartTimestamp=new GregorianCalendar();
+		{
+			int datasetSize = timestampTracker.getDatasetSize(dataset, Deleted.INCLUDE);
+			int datasetSizeDeleted = datasetSize - timestampTracker.getDatasetSize(dataset, Deleted.EXCLUDE);
+			crawler.log("Starting to process dataset: "+dataset+ " ("+datasetSize+" resources, "+ datasetSizeDeleted +" deleted)");
+		}
 		process(dataset);
 		if(currentHarvestLattestTimestamp!=null)
 			timestampTracker.setDatasetTimestamp(dataset, currentHarvestLattestTimestamp);
 		else 
 			timestampTracker.setDatasetTimestamp(dataset, currentHarvestStartTimestamp);
 		timestampTracker.commit();
+		{
+			int datasetSize = timestampTracker.getDatasetSize(dataset, Deleted.INCLUDE);
+			int datasetSizeDeleted = datasetSize - timestampTracker.getDatasetSize(dataset, Deleted.EXCLUDE);
+			crawler.log("Finished processing dataset: "+dataset+ " ("+datasetSize+" resources, "+ datasetSizeDeleted +" deleted)");
+		}
 	}
+	@SuppressWarnings("incomplete-switch")
 	public void process(String collectionOrPageUrl) throws IOException{
+		crawler.log("Processing resource "+collectionOrPageUrl);
 		InputStream inStream;
 		Reader reader;
 		if(collectionOrPageUrl.startsWith("file:")) {
@@ -113,6 +126,11 @@ public class ProcesssingAlgorithm {
 		jr.endObject();
 		jr.close();
 		reader.close();
+		{
+			int datasetSize = timestampTracker.getDatasetSize(dataset, Deleted.INCLUDE);
+			int datasetSizeDeleted = datasetSize - timestampTracker.getDatasetSize(dataset, Deleted.EXCLUDE);
+			crawler.log("Progress: ("+datasetSize+" resources, "+ datasetSizeDeleted +" deleted)");
+		}
 		jsonObj.finalize();
 	}
 	
