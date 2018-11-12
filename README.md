@@ -18,7 +18,7 @@ the <a href="https://preview.iiif.io/api/discovery-context/api/discovery/0.2/">I
 <p>The software is functional but has only been applied in the few IIIF endpoints implementing the <a href="https://preview.iiif.io/api/discovery-context/api/discovery/0.2/">IIIF Change Discovery API 0.2</a></p>
 <p>All the possible data flows that occur in incremental harvesting have not been tested. Handling of service and communication failures is also not extensively tested.</p>
 <h2 id="coming-work">Coming work</h2>
-<p>We expect the software to evolve over 2018/19. It will be constantly aligned with the coming revisions of the <a href="https://preview.iiif.io/api/discovery-context/api/discovery/0.2/">IIIF Change Discovery API</a> until the API reaches the 1.0 version.</p>
+<p>We expect the software to evolve over 2018/19. It will be constantly aligned with the coming revisions of the [IIIF Change Discovery API](<a href="https://iiif.io/api/discovery">IIIF Change Discovery</a> until the API reaches the 1.0 version.</p>
 <p>The software will be extended for harvesting of structured metadata associated to the IIIF resources (i.e. seeAlso links). Our initial focus will be on the harvesting of <a href="https://pro.europeana.eu/resources/standardization-tools/edm-documentation">Europeana Data Model</a> and <a href="http://schema.org">Schema.org</a> metadata, and on general metadata harvesting functionality for application with other types of metadata.</p>
 <h3 id="acknowledgements">Acknowledgements</h3>
 <p>Many thanks to the members of the  <a href="http://iiif.io/community/groups/discovery/">IIIF Discovery Technical Specification Group</a> and the Europeana R&amp;D team.</p>
