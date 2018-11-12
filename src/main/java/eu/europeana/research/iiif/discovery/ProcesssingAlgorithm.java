@@ -28,18 +28,26 @@ public class ProcesssingAlgorithm {
 	Calendar currentHarvestStartTimestamp=null;
 	Calendar currentHarvestLattestTimestamp=null;
 	HashSet<String> processedItems;
+	HashSet<String> processedCollections;
 	String dataset;
+	
+	Integer sampleSize;
+
 	
 	public ProcesssingAlgorithm(TimestampTracker timestampTracker, CrawlingHandler crawler) throws Exception {
 		this.timestampTracker = timestampTracker;
 		this.crawler = crawler;
-		timestampTracker.open();
 	}
 	
-	public void startProcess(String dataset) throws Exception{
+	public void setSampleSize(Integer sampleSize) {
+		this.sampleSize = sampleSize;
+	}
+	
+	public Calendar startProcess(String dataset, boolean updateDatasetTimestamp) throws Exception{
 		this.dataset = dataset;
-		lastHarvest=timestampTracker.getDatasetStatus(dataset);
+		lastHarvest=timestampTracker.getDatasetTimestamp(dataset);
 		processedItems=new HashSet<>(1000);
+		processedCollections=new HashSet<>();
 		currentHarvestStartTimestamp=new GregorianCalendar();
 		{
 			int datasetSize = timestampTracker.getDatasetSize(dataset, Deleted.INCLUDE);
@@ -48,8 +56,8 @@ public class ProcesssingAlgorithm {
 		}
 		process(dataset);
 		if(currentHarvestLattestTimestamp!=null)
-			timestampTracker.setDatasetTimestamp(dataset, currentHarvestLattestTimestamp);
-		else 
+			currentHarvestStartTimestamp=currentHarvestLattestTimestamp;
+		if(updateDatasetTimestamp) 
 			timestampTracker.setDatasetTimestamp(dataset, currentHarvestStartTimestamp);
 		timestampTracker.commit();
 		{
@@ -57,9 +65,14 @@ public class ProcesssingAlgorithm {
 			int datasetSizeDeleted = datasetSize - timestampTracker.getDatasetSize(dataset, Deleted.EXCLUDE);
 			crawler.log("Finished processing dataset: "+dataset+ " ("+datasetSize+" resources, "+ datasetSizeDeleted +" deleted)");
 		}
+		return currentHarvestLattestTimestamp;
 	}
 	@SuppressWarnings("incomplete-switch")
 	public void process(String collectionOrPageUrl) throws IOException{
+		if(processedCollections.contains(collectionOrPageUrl)) {
+			return;
+		}
+		processedCollections.add(collectionOrPageUrl);
 		crawler.log("Processing resource "+collectionOrPageUrl);
 		InputStream inStream;
 		Reader reader;
@@ -225,6 +238,10 @@ public class ProcesssingAlgorithm {
 			return false;
 		if(processedItems.contains(activity.getObjectId()))
 			return true;
+
+		if(sampleSize!=null && processedItems.size()>=sampleSize)
+			return false;
+		
 		crawler.processManifest(activity);
 		timestampTracker.setObjectTimestamp(this.dataset, activity.getObjectId(), activity.getEndTime());
 		if(currentHarvestLattestTimestamp==null)

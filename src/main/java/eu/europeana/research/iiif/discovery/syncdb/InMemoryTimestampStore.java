@@ -27,6 +27,7 @@ import org.apache.commons.csv.CSVRecord;
 public class InMemoryTimestampStore implements TimestampTracker {
 	Map<String, Map<String, Calendar>> db=new HashMap<>();
 	Map<String, Calendar> dbDataset=new HashMap<>();
+	Map<String, Calendar> dbDatasetError=new HashMap<>();
 //	Set<String> dbDeletedDataset=new HashSet<>();
 	Map<String, Set<String>> dbDeleted=new HashMap<>();
 	
@@ -36,6 +37,14 @@ public class InMemoryTimestampStore implements TimestampTracker {
 		this.persistanceCsvFolder = new File(persistanceCsvFolder);
 	}
 
+	@Override
+	public void clear(String dataset) {
+		db.remove(dataset);
+		dbDeleted.remove(dataset);
+		dbDataset.remove(dataset);
+		dbDatasetError.remove(dataset);
+	}
+	
 	public void setDatasetTimestamp(String dataset, Calendar timestamp) {
 		dbDataset.put(dataset, timestamp);
 	}
@@ -70,7 +79,7 @@ public class InMemoryTimestampStore implements TimestampTracker {
 	}
 
 	@Override
-	public void open() throws IOException {
+	public synchronized void open() throws IOException {
 		File datasetsFile = new File(persistanceCsvFolder, "syncdb-datasets.syncdb.csv");
 		if(datasetsFile.exists()) {
 			FileInputStream fosDatasets=new FileInputStream(datasetsFile);
@@ -81,13 +90,21 @@ public class InMemoryTimestampStore implements TimestampTracker {
 				GregorianCalendar timestamp = new GregorianCalendar();
 				timestamp.setTimeInMillis(Long.parseLong(rec.get(1)));
 				dbDataset.put(rec.get(0), timestamp);
+				if(rec.size()>=3) {
+					timestamp = new GregorianCalendar();
+					timestamp.setTimeInMillis(Long.parseLong(rec.get(2)));
+					dbDatasetError.put(rec.get(0), timestamp);
+				}
 				dbDeleted.put(rec.get(0), new HashSet<>());
 				db.put(rec.get(0), new HashMap<>());
 			}
 			csvParserDatasets.close();
 			
-			for(Entry<String, Calendar> dataset: dbDataset.entrySet()) {			
-				FileInputStream fosResources=new FileInputStream(new File(persistanceCsvFolder, URLEncoder.encode(dataset.getKey(), "UTF-8")+".syncdb.csv"));
+			for(Entry<String, Calendar> dataset: dbDataset.entrySet()) {	
+				File file = new File(persistanceCsvFolder, URLEncoder.encode(dataset.getKey(), "UTF-8")+".syncdb.csv");
+				if(!file.exists())
+					return;
+				FileInputStream fosResources=new FileInputStream(file);
 				InputStreamReader resourcesCsvWriter=new InputStreamReader(fosResources, "UTF-8");
 				CSVParser csvParserResources=new CSVParser(resourcesCsvWriter, CSVFormat.DEFAULT);
 				Set<String> deletedOfDataset = dbDeleted.get(dataset.getKey());
@@ -109,7 +126,7 @@ public class InMemoryTimestampStore implements TimestampTracker {
 	}
 
 	@Override
-	public void commit() throws IOException {
+	public synchronized  void commit() throws IOException {
 		if(!persistanceCsvFolder.exists())
 			persistanceCsvFolder.mkdirs();
 		FileOutputStream fosDatasets=new FileOutputStream(new File(persistanceCsvFolder, "syncdb-datasets.syncdb.csv"), false);
@@ -118,25 +135,30 @@ public class InMemoryTimestampStore implements TimestampTracker {
 		for(Entry<String, Calendar> dataset: dbDataset.entrySet()) {
 			csvPrinterDatasets.print(dataset.getKey());
 			csvPrinterDatasets.print(dataset.getValue().getTimeInMillis());
+			Calendar lastError = dbDatasetError.get(dataset.getKey());
+			if(lastError!=null)
+				csvPrinterDatasets.print(lastError.getTimeInMillis());			
 			csvPrinterDatasets.println();
 			
-			FileOutputStream fosResources=new FileOutputStream(new File(persistanceCsvFolder, URLEncoder.encode(dataset.getKey(), "UTF-8")+".syncdb.csv"), false);
-			OutputStreamWriter resourcesCsvWriter=new OutputStreamWriter(fosResources, "UTF-8");
-			CSVPrinter csvPrinterResources=new CSVPrinter(resourcesCsvWriter, CSVFormat.DEFAULT);
-			Set<String> deletedOfDataset = dbDeleted.get(dataset.getKey());
-			for(Entry<String, Calendar> resource: db.get(dataset.getKey()).entrySet()) {
-				csvPrinterResources.print(resource.getKey());
-				csvPrinterResources.print(resource.getValue()==null? "" : resource.getValue().getTimeInMillis());
-				csvPrinterResources.print(deletedOfDataset.contains(resource.getKey()) ? "D" : "");
-				csvPrinterResources.println();
+			if(db.containsKey(dataset.getKey())) {
+				FileOutputStream fosResources=new FileOutputStream(new File(persistanceCsvFolder, URLEncoder.encode(dataset.getKey(), "UTF-8")+".syncdb.csv"), false);
+				OutputStreamWriter resourcesCsvWriter=new OutputStreamWriter(fosResources, "UTF-8");
+				CSVPrinter csvPrinterResources=new CSVPrinter(resourcesCsvWriter, CSVFormat.DEFAULT);
+				Set<String> deletedOfDataset = dbDeleted.get(dataset.getKey());
+				for(Entry<String, Calendar> resource: db.get(dataset.getKey()).entrySet()) {
+					csvPrinterResources.print(resource.getKey());
+					csvPrinterResources.print(resource.getValue()==null? "" : resource.getValue().getTimeInMillis());
+					csvPrinterResources.print(deletedOfDataset.contains(resource.getKey()) ? "D" : "");
+					csvPrinterResources.println();
+				}
+				csvPrinterResources.close();
 			}
-			csvPrinterResources.close();
 		}
 		csvPrinterDatasets.close();
 	}
 
 	@Override
-	public Calendar getDatasetStatus(String dataset) {
+	public Calendar getDatasetTimestamp(String dataset) {
 		return dbDataset.get(dataset);
 	}
 
@@ -173,4 +195,15 @@ public class InMemoryTimestampStore implements TimestampTracker {
 			return datasetDbMap.size()-dbDeleted.get(dataset).size();
 		return datasetDbMap.size();
 	}
+	
+	@Override
+	public void setDatasetLastError(String dataset, Calendar timestamp) {
+		dbDatasetError.put(dataset, timestamp);
+	}
+	
+	@Override
+	public Calendar getDatasetLastError(String dataset) {
+		return dbDatasetError.get(dataset);
+	}
+	
 }
