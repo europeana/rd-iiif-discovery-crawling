@@ -25,11 +25,11 @@ import eu.europeana.research.iiif.discovery.ProcesssingAlgorithm;
 //           	"id": "https://example.org/activity/page-214",
 //           	"type": "OrderedCollectionPage"
 //           }
-public class OrderedCollection extends JsonObject{
+public class OrderedCollection extends JsonObject {
 	
 	ProcesssingAlgorithm processsingAlgorithm;
-//	String firstPageId;
 	String lastPageId;
+	Integer totalItems;
 	
 	public OrderedCollection() {
 		type=IiifObjectType.OrderedCollection;
@@ -46,21 +46,22 @@ public class OrderedCollection extends JsonObject{
 		}
 	}
 	
-	@Override
-	public void processField(String name, Object value) {
-	}
 	
 	@Override
 	public void processObject(String name, JsonReader jr) throws IOException {
-		if(name.equals("first")) {
+//		if(name.equals("first")) {
 //			IiifResourceReference ref=new IiifResourceReference(jr);
 //			firstPageId=ref.getId();
-			jr.skipValue();
-		} else if(name.equals("last")) {
+//		} else 
+			if(name.equals("last")) {
 			IiifResourceReference ref=new IiifResourceReference(jr);
 			lastPageId=ref.getId();
+		} else if(name.equals("totalItems")) {
+			processField(name, jr);
+			IiifResourceReference ref=new IiifResourceReference(jr);
+			totalItems=jr.nextInt();
 		} else 
-			jr.skipValue();
+			processField(name, jr);
 	}
 
 	public void setProcessingAlgorithm(ProcesssingAlgorithm processsingAlgorithm) {

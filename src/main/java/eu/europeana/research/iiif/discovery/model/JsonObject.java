@@ -45,6 +45,18 @@ public class JsonObject {
 			inst.processField(e.getKey(), e.getValue());
 		return inst;
 	}
+	protected void processField(String name, JsonReader value) throws IOException {
+		switch (value.peek()) {
+		case BOOLEAN:
+			processField(name, value.nextBoolean());
+		case NUMBER:
+			processField(name, value.nextLong());
+		case STRING:
+			processField(name, value.nextString());
+		default:
+			value.skipValue();
+		}
+	}
 	public void processField(String name, Object value) {
 		fields.put(name, value);
 	}

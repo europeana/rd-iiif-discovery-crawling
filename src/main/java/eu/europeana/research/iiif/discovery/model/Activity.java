@@ -49,7 +49,7 @@ public class Activity extends JsonObject {
 				if(ref.isManifest())
 					objectId=ref.getId();
 			} else {
-				jr.skipValue();
+				processField(field, jr);
 			}
 		}
 		jr.endObject();

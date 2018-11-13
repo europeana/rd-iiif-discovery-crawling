@@ -73,9 +73,6 @@ public class OrderedCollectionPage extends JsonObject{
 		}
 	}
 	
-	@Override
-	public void processField(String name, Object value) {
-	}
 	
 	@Override
 	public void processObject(String name, JsonReader jr) throws IOException {
@@ -94,7 +91,7 @@ public class OrderedCollectionPage extends JsonObject{
 			}
 			jr.endObject();
 		} else 
-			jr.skipValue();
+			processField(name, jr);
 	}
 
 	public void setProcessingAlgorithm(ProcesssingAlgorithm processsingAlgorithm) {
