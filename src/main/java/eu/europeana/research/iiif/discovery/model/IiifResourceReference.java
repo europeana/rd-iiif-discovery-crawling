@@ -1,16 +1,23 @@
 package eu.europeana.research.iiif.discovery.model;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 
 public class IiifResourceReference {
-	String id;
-	String type;
+	protected String id;
+	protected  String type;
+	protected  List<IiifContextReference> context;
 	
-
+	protected IiifResourceReference() {
+		context=new ArrayList<>();
+	}
+	
 	public IiifResourceReference(JsonReader jr) throws IOException {
+		this();
 		jr.beginObject();
 		while(jr.peek()!=JsonToken.END_OBJECT){
 			String field = jr.nextName();
@@ -18,6 +25,13 @@ public class IiifResourceReference {
 				type=jr.nextString();
 			}else if(field.equals("id")) {
 				id=jr.nextString();
+			}else if(field.equals("context")) {
+				jr.beginArray();
+				while(jr.hasNext()) {
+					IiifContextReference ctx=new IiifContextReference(jr);
+					context.add(ctx);
+				}
+				jr.endArray();
 			} else {
 				jr.skipValue();
 			}
@@ -43,6 +57,9 @@ public class IiifResourceReference {
 	public boolean isManifest() {
 		return type!=null && (type.equals("Manifest") || type.equals("sc:Manifest"));
 	}
-	
-	
+
+	public List<IiifContextReference> getContext() {
+		return context;
+	}
+
 }

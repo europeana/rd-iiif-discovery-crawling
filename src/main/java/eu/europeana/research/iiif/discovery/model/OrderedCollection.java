@@ -1,7 +1,9 @@
 package eu.europeana.research.iiif.discovery.model;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
@@ -28,11 +30,13 @@ import eu.europeana.research.iiif.discovery.ProcesssingAlgorithm;
 public class OrderedCollection extends JsonObject {
 	
 	ProcesssingAlgorithm processsingAlgorithm;
-	String lastPageId;
-	Integer totalItems;
+	protected String lastPageId;
+	protected List<IiifContextReference> context;
+	protected Integer totalItems;
 	
 	public OrderedCollection() {
 		type=IiifObjectType.OrderedCollection;
+		context=new ArrayList<>();
 	}
 	
 	@Override
@@ -41,6 +45,13 @@ public class OrderedCollection extends JsonObject {
 			jr.beginArray();
 			while(jr.hasNext()) {
 				Activity act=new Activity(jr);
+			}
+			jr.endArray();
+		}else if(name.equals("context")) {
+			jr.beginArray();
+			while(jr.hasNext()) {
+				IiifContextReference ctx=new IiifContextReference(jr);
+				context.add(ctx);
 			}
 			jr.endArray();
 		}
@@ -60,8 +71,16 @@ public class OrderedCollection extends JsonObject {
 			processField(name, jr);
 			IiifResourceReference ref=new IiifResourceReference(jr);
 			totalItems=jr.nextInt();
+		} else if(name.equals("context")) {
+			processField(name, jr);
+			IiifResourceReference ref=new IiifResourceReference(jr);
+			totalItems=jr.nextInt();
 		} else 
 			processField(name, jr);
+	}
+
+	public List<IiifContextReference> getContext() {
+		return context;
 	}
 
 	public void setProcessingAlgorithm(ProcesssingAlgorithm processsingAlgorithm) {
@@ -72,4 +91,6 @@ public class OrderedCollection extends JsonObject {
 	public void finalize() throws IOException {
 		processsingAlgorithm.process(lastPageId);
 	}
+	
+
 }
