@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Calendar;
 import java.util.Collections;
@@ -43,6 +44,14 @@ public class InMemoryTimestampStore implements TimestampTracker {
 		dbDeleted.remove(dataset);
 		dbDataset.remove(dataset);
 		dbDatasetError.remove(dataset);
+		File resourcesFile;
+		try {
+			resourcesFile = new File(persistanceCsvFolder, URLEncoder.encode(dataset, "UTF-8")+".syncdb.csv");
+			if (resourcesFile.exists())
+				resourcesFile.delete();
+		} catch (UnsupportedEncodingException e) {
+			// not possible
+		}
 	}
 	
 	public void setDatasetTimestamp(String dataset, Calendar timestamp) {
