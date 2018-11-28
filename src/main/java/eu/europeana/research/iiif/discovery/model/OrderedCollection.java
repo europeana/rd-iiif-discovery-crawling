@@ -1,6 +1,7 @@
 package eu.europeana.research.iiif.discovery.model;
 
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -92,5 +93,24 @@ public class OrderedCollection extends JsonObject {
 		processsingAlgorithm.process(lastPageId);
 	}
 	
+	public static List<IiifContextReference> getContext(String jsonStringOfAnOrderedCollection) throws IOException {
+		List<IiifContextReference> context=new ArrayList<>();
+		JsonReader jr=new JsonReader(new StringReader(jsonStringOfAnOrderedCollection));
+		jr.beginObject();
+		while(jr.peek()!=JsonToken.END_OBJECT){
+			String field = jr.nextName();
+			if(field.equals("context")) {
+				jr.beginArray();
+				while(jr.hasNext()) {
+					IiifContextReference ctx=new IiifContextReference(jr);
+					context.add(ctx);
+				}
+				jr.endArray();
+			}else 
+				jr.skipValue();
+		}
+		jr.close();
+		return context;
+	}
 
 }
