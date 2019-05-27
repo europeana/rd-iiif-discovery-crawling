@@ -5,19 +5,19 @@ import java.io.IOException;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 
-public class IiifContextReference {
+public class IiifSeeAlsoReference {
 	protected String id;
 	protected String type;
-	protected String mediaType;
+	protected String format;
 
-	public IiifContextReference(JsonReader jr) throws IOException {
+	public IiifSeeAlsoReference(JsonReader jr) throws IOException {
 		jr.beginObject();
 		while(jr.peek()!=JsonToken.END_OBJECT){
 			String field = jr.nextName();
 			if(field.equals("type")) {
 				type=jr.nextString();
-			}else if(field.equals("mediaType")) {
-					mediaType=jr.nextString();
+			}else if(field.equals("format")) {
+					format=jr.nextString();
 			}else if(field.equals("id")) {
 				id=jr.nextString();
 			} else {
@@ -28,11 +28,11 @@ public class IiifContextReference {
 	}
 	
 	
-	public String getMediaType() {
-		return mediaType;
+	public String getFormat() {
+		return format;
 	}
-	public void setMediaType(String mediaType) {
-		this.mediaType = mediaType;
+	public void setFormat(String format) {
+		this.format = format;
 	}
 	
 	public String getId() {

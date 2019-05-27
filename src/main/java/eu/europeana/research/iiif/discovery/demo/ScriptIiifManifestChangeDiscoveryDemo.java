@@ -18,16 +18,7 @@ public class ScriptIiifManifestChangeDiscoveryDemo {
 //		String inputDiscoveryJson="file:src/test/data/iiif-discovery-oclc-15878.json";
 //		String inputDiscoveryJson="file:src/test/data/iiif-discovery-ncsu.json";
 //		String inputDiscoveryJson="file:src/test/data/3.json";
-//		String inputDiscoveryJson="http://52.204.112.237:3051/activity-streams/15878";
-//		String inputDiscoveryJson="http://52.204.112.237:3051/activity-streams/16003";
-//		String inputDiscoveryJson="http://52.204.112.237:3051/activity-streams/16007";
-//		String inputDiscoveryJson="http://52.204.112.237:3051/activity-streams/16022";
-//		String inputDiscoveryJson="http://52.204.112.237:3051/activity-streams/16079";
-//		String inputDiscoveryJson="http://52.204.112.237:3051/activity-streams/16214";
-//		String inputDiscoveryJson="http://52.204.112.237:3051/activity-streams/17272";
-//		String inputDiscoveryJson="http://52.204.112.237:3051/activity-streams/17287";
-//		String inputDiscoveryJson="https://scrc.lib.ncsu.edu/sal_staging/iiif-discovery.json";
-		String inputDiscoveryJson="https://mcgrattan.org/as/";
+		String inputDiscoveryJson="https://researchworks.oclc.org/digital/activity-stream/collection/16007_p267401coll32";
 		
 		String iiifManifestListCsv="target/syncdb";
 

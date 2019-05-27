@@ -28,11 +28,25 @@ public class TimestampCrawlingHandler implements CrawlingHandler {
 					String location = conn.getHeaderField("Location");
 					if(location!=null)
 						return httpGet(location);
+				}else if( conn.getResponseCode()==429) {
+					String retryAfter = conn.getHeaderField("Retry-After");
+					if(retryAfter!=null) {
+						try {
+							Thread.sleep(Long.parseLong(retryAfter));
+							return httpGet(url);							
+						} catch (NumberFormatException e) {
+							//ignore and proceed to sleep
+						}
+					}
+					Thread.sleep(1000);
+					return httpGet(url);
 				}
 				return IOUtils.toString(conn.getInputStream(), "UTF-8");
 			} catch (IOException ex) {
 				if (tries >= 3)
 					throw ex;
+			} catch (InterruptedException ex) {
+				return null;
 			}
 		}
 	}

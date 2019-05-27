@@ -49,10 +49,13 @@ public class JsonObject {
 		switch (value.peek()) {
 		case BOOLEAN:
 			processField(name, value.nextBoolean());
+			break;
 		case NUMBER:
 			processField(name, value.nextLong());
+			break;
 		case STRING:
 			processField(name, value.nextString());
+			break;
 		default:
 			value.skipValue();
 		}

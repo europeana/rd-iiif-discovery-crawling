@@ -31,13 +31,16 @@ import eu.europeana.research.iiif.discovery.ProcesssingAlgorithm;
 public class OrderedCollection extends JsonObject {
 	
 	ProcesssingAlgorithm processsingAlgorithm;
+	protected String firstPageId;
 	protected String lastPageId;
-	protected List<IiifContextReference> context;
+	protected List<IiifSeeAlsoReference> seeAlso;
 	protected Integer totalItems;
+	protected List<IiifResourceReference> partOf;
 	
 	public OrderedCollection() {
 		type=IiifObjectType.OrderedCollection;
-		context=new ArrayList<>();
+		seeAlso=new ArrayList<>();
+		partOf=new ArrayList<>();
 	}
 	
 	@Override
@@ -48,11 +51,18 @@ public class OrderedCollection extends JsonObject {
 				Activity act=new Activity(jr);
 			}
 			jr.endArray();
-		}else if(name.equals("context")) {
+		}else if(name.equals("seeAlso")) {
 			jr.beginArray();
 			while(jr.hasNext()) {
-				IiifContextReference ctx=new IiifContextReference(jr);
-				context.add(ctx);
+				IiifSeeAlsoReference ctx=new IiifSeeAlsoReference(jr);
+				seeAlso.add(ctx);
+			}
+			jr.endArray();
+		}else if(name.equals("partOf")) {
+			jr.beginArray();
+			while(jr.hasNext()) {
+				IiifResourceReference ctx=new IiifResourceReference(jr);
+				partOf.add(ctx);
 			}
 			jr.endArray();
 		}
@@ -65,23 +75,27 @@ public class OrderedCollection extends JsonObject {
 //			IiifResourceReference ref=new IiifResourceReference(jr);
 //			firstPageId=ref.getId();
 //		} else 
-			if(name.equals("last")) {
+		if(name.equals("last")) {
 			IiifResourceReference ref=new IiifResourceReference(jr);
 			lastPageId=ref.getId();
+		} else if(name.equals("first")) {
+				IiifResourceReference ref=new IiifResourceReference(jr);
+				firstPageId=ref.getId();
 		} else if(name.equals("totalItems")) {
 			processField(name, jr);
-			IiifResourceReference ref=new IiifResourceReference(jr);
 			totalItems=jr.nextInt();
-		} else if(name.equals("context")) {
-			processField(name, jr);
+		} else if(name.equals("seeAlso")) {
+			IiifSeeAlsoReference ref=new IiifSeeAlsoReference(jr);
+			seeAlso.add(ref);
+		} else if(name.equals("partOf")) {
 			IiifResourceReference ref=new IiifResourceReference(jr);
-			totalItems=jr.nextInt();
+			partOf.add(ref);
 		} else 
 			processField(name, jr);
 	}
 
-	public List<IiifContextReference> getContext() {
-		return context;
+	public List<IiifSeeAlsoReference> getSeeAlso() {
+		return seeAlso;
 	}
 
 	public void setProcessingAlgorithm(ProcesssingAlgorithm processsingAlgorithm) {
@@ -93,24 +107,24 @@ public class OrderedCollection extends JsonObject {
 		processsingAlgorithm.process(lastPageId);
 	}
 	
-	public static List<IiifContextReference> getContext(String jsonStringOfAnOrderedCollection) throws IOException {
-		List<IiifContextReference> context=new ArrayList<>();
+	public static List<IiifSeeAlsoReference> getSeeAlso(String jsonStringOfAnOrderedCollection) throws IOException {
+		List<IiifSeeAlsoReference> seeAlso=new ArrayList<>();
 		JsonReader jr=new JsonReader(new StringReader(jsonStringOfAnOrderedCollection));
 		jr.beginObject();
 		while(jr.peek()!=JsonToken.END_OBJECT){
 			String field = jr.nextName();
-			if(field.equals("context")) {
+			if(field.equals("seeAlso")) {
 				jr.beginArray();
 				while(jr.hasNext()) {
-					IiifContextReference ctx=new IiifContextReference(jr);
-					context.add(ctx);
+					IiifSeeAlsoReference ctx=new IiifSeeAlsoReference(jr);
+					seeAlso.add(ctx);
 				}
 				jr.endArray();
 			}else 
 				jr.skipValue();
 		}
 		jr.close();
-		return context;
+		return seeAlso;
 	}
 
 }

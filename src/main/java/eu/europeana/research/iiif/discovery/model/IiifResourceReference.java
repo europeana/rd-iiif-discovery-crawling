@@ -10,10 +10,10 @@ import com.google.gson.stream.JsonToken;
 public class IiifResourceReference {
 	protected String id;
 	protected  String type;
-	protected  List<IiifContextReference> context;
+	protected  List<IiifSeeAlsoReference> seeAlso;
 	
 	protected IiifResourceReference() {
-		context=new ArrayList<>();
+		seeAlso=new ArrayList<>();
 	}
 	
 	public IiifResourceReference(JsonReader jr) throws IOException {
@@ -25,11 +25,11 @@ public class IiifResourceReference {
 				type=jr.nextString();
 			}else if(field.equals("id")) {
 				id=jr.nextString();
-			}else if(field.equals("context")) {
+			}else if(field.equals("seeAlso")) {
 				jr.beginArray();
 				while(jr.hasNext()) {
-					IiifContextReference ctx=new IiifContextReference(jr);
-					context.add(ctx);
+					IiifSeeAlsoReference ctx=new IiifSeeAlsoReference(jr);
+					seeAlso.add(ctx);
 				}
 				jr.endArray();
 			} else {
@@ -58,8 +58,8 @@ public class IiifResourceReference {
 		return type!=null && (type.equals("Manifest") || type.equals("sc:Manifest"));
 	}
 
-	public List<IiifContextReference> getContext() {
-		return context;
+	public List<IiifSeeAlsoReference> getSeeAlso() {
+		return seeAlso;
 	}
 
 }
