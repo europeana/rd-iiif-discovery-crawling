@@ -120,7 +120,7 @@ Statistics on the IIIF Change Discovery API stream at https://example.org/any-ii
 ## Changelog
 
 0.9 (2023-11-15) 
-- Initial version   
+- First fully functional version that supports IIIF Change Discovery API 
 
 
 
