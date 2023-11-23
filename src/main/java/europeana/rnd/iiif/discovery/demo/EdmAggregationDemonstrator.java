@@ -25,7 +25,6 @@ import europeana.rnd.iiif.discovery.model.SeeAlsoProfile;
  * 
  */
 public class EdmAggregationDemonstrator {
-	protected static boolean UNDER_DEVELOPEMENT = false;
 
 	/**
 	 * The command line parameters
@@ -88,12 +87,7 @@ public class EdmAggregationDemonstrator {
 			System.out.println();
 			System.out.println("Usage information:");
 			parser.printUsage(System.out);
-			if (UNDER_DEVELOPEMENT) {
-				params.streamUrl = "https://iiif-staging.aipberoun.cz/apis/iiif-api/discovery/ordered-collection";
-				params.timestampsDbFolder = "target/syncdb";
-				params.edmRepositoryFolder = "target/metadata-repository";
-			} else
-				return;
+			return;
 		}
 
 		IiifManifestChangeDiscoveryDemo demo = new IiifManifestChangeDiscoveryDemo(params.streamUrl,
